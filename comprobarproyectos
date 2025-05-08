@@ -1,0 +1,43 @@
+import xmlrpc.client
+
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+# Conexión a la API de Odoo
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Buscar todos los proyectos
+projects = models.execute_kw(db, uid, password,
+    'project.project', 'search_read',
+    [[]],  # sin filtro, traer todos los proyectos
+    {
+        'fields': [
+            'name',          # Nombre del proyecto
+            'user_id',       # Responsable
+            'date_start',    # Fecha de inicio
+            'date_end',      # Fecha de finalización
+            'partner_id',    # Cliente (opcional si usas CRM)
+            'active',        # Si está activo
+        ],
+        'limit': 100  # Mostrar solo 10 proyectos, puedes eliminar este límite si quieres todos
+    })
+
+# Imprimir los resultados
+for p in projects:
+    # Verificar que los campos relacionados estén presentes antes de usarlos
+    user_name = p.get('user_id', [None, '-'])[1] if p.get('user_id') else '-'
+    partner_name = p.get('partner_id', [None, '-'])[1] if p.get('partner_id') else '-'
+    
+    # Formatear las fechas de inicio y fin, usando .get() para evitar KeyError
+    date_start = p.get('date_start', '-') if p.get('date_start') else '-'
+    date_end = p.get('date_end', '-') if p.get('date_end') else '-'
+    
+    # Estado del proyecto
+    active_status = 'Activo' if p.get('active', False) else 'Archivado'
+    
+    # Imprimir los datos del proyecto
+    print(f"{p['name']}\t{date_start}\t{date_end}\t{user_name}\t{partner_name}\t{active_status}")

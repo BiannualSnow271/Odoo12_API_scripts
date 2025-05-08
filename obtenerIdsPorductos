@@ -1,0 +1,22 @@
+import xmlrpc.client
+
+# Datos de conexión
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+# Autenticación
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Obtener productos con sus precios de venta
+product_prices = models.execute_kw(db, uid, password,
+    'product.template', 'search_read',
+    [],  # No filtros
+    {'fields': ['id', 'name', 'list_price'], 'limit': 1000})  # Limite de 1000 productos
+
+# Mostrar los resultados con ID y precio
+for product in product_prices:
+    print(f"ID: {product['id']} | Producto: {product['name']} | Precio: {product['list_price']} €")

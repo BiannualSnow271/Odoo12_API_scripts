@@ -1,0 +1,30 @@
+import xmlrpc.client
+
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Buscar solo el pedido 1097854
+orders = models.execute_kw(db, uid, password,
+    'sale.order', 'search_read',
+    [[['id', '=', 1097854]]],
+    {
+        'fields': [
+            'name',
+            'date_order',
+            'partner_id',
+            'partner_invoice_id',
+            'user_id',
+            'amount_total',
+            'invoice_status',
+        ],
+        'limit': 1
+    })
+
+for o in orders:
+    print(f"{o['name']}\t{o['date_order']}\t{o['partner_id'][1]}\t{o['partner_invoice_id'][1] if o['partner_invoice_id'] else '-'}\t{o['user_id'][1] if o['user_id'] else '-'}\t{o['amount_total']} €\t{o['invoice_status']}")

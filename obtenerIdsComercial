@@ -1,0 +1,24 @@
+import xmlrpc.client
+
+# Conexión a Odoo
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+# Autenticación
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+
+# Acceso al modelo
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Obtener usuarios (comerciales)
+users = models.execute_kw(db, uid, password,
+    'res.users', 'search_read',
+    [[]],  # Sin filtros: todos los usuarios
+    {'fields': ['id', 'name', 'login'], 'limit': 100})
+
+# Mostrar usuarios
+for user in users:
+    print(f"{user['id']}: {user['name']} ({user['login']})")

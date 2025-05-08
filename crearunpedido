@@ -1,0 +1,38 @@
+import xmlrpc.client
+
+id_partner= [integer]
+id_facturation= [integer]
+id_comertial= [integer] 
+id_product=  [integer]
+price = [decimal number]
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Paso 1: crear el pedido
+sale_order_id = models.execute_kw(db, uid, password,
+    'sale.order', 'create', [{
+        'partner_id': id_partner,  # ID del cliente
+        'partner_invoice_id': id_facturacion,  # Dirección de facturación (si es distinta se puede cambiar)
+        'date_order': '2025-04-25 12:00:00',  # opcional
+        'user_id': id_comercial,  # ID del comercial (opcional)
+    }])
+
+# Paso 2: añadir línea de pedido
+models.execute_kw(db, uid, password,
+    'sale.order.line', 'create', [{
+        'order_id': sale_order_id,
+        'product_id': id_producto,  # ID del producto
+        'product_uom_qty': 250,  # cantidad
+        'price_unit': id_Precio,  # precio por unidad
+        'name': 'Descripción de la línea del pedido (opcional)'
+    }])
+
+print(f"Pedido creado con ID {sale_order_id}")
+
+#ID: 232177 | Producto: 2177.705 | Precio: 5.95 €

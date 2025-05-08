@@ -1,0 +1,23 @@
+import xmlrpc.client
+
+# Conexión
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+# Autenticación
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Obtener todas las direcciones (sin filtro)
+invoice_addresses = models.execute_kw(db, uid, password,
+    'res.partner', 'search_read',
+    [],  # Aquí no estamos aplicando ningún filtro
+    {'fields': ['id', 'name', 'parent_id'], 'limit': 1000})  # Sin límite
+
+# Mostrar los resultados
+for addr in invoice_addresses:
+    parent = addr['parent_id'][1] if addr['parent_id'] else 'Sin cliente asociado'
+    print(f"{addr['id']}: {addr['name']} (Cliente: {parent})")

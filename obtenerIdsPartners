@@ -1,0 +1,22 @@
+import xmlrpc.client
+
+# Datos de conexión
+url = [url]
+db = [database_name]
+username = [odoo_username]
+password = [odoo_password]
+
+# Autenticación
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+# Obtener partners (clientes/proveedores)
+partners = models.execute_kw(db, uid, password,
+    'res.partner', 'search_read',
+    [[]],  # Sin filtros: todos los contactos
+    {'fields': ['id', 'name'], 'limit': 1000})  # puedes aumentar el límite si necesitas más
+
+# Mostrar resultados
+for partner in partners:
+    print(f"{partner['id']}: {partner['name']}")
